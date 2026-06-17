@@ -115,3 +115,74 @@ class Projectile extends Entity {
     ctx.restore();
   }
 }
+
+// Explosion class for AoE attacks (used by Fire Wand)
+class Explosion extends Entity {
+  constructor(x, y, radius, damage, lifetime = 0.4, opts = {}) {
+    super(x, y, radius);
+    this.radius = radius;
+    this.damage = damage;
+    this.lifetime = lifetime;
+    this.color = (opts && opts.color) || '#ff7a00';
+    this.glow = (opts && opts.glow) || '#ffb244';
+    this.source = (opts && opts.source) || null;
+    this.type = 'explosion';
+    this._applied = false; // whether damage has been applied already
+  }
+
+  update(dt, game) {
+    super.update(dt);
+
+    // Apply damage on the first update frame after creation
+    if (!this._applied) {
+      this._applied = true;
+      // Apply damage to all enemies within radius
+      for (const enemy of game.enemies) {
+        if (!enemy.alive) continue;
+        const dist = Utils.distance(this.x, this.y, enemy.x, enemy.y);
+        if (dist <= this.radius + enemy.radius) {
+          // Knockback angle from explosion center toward enemy
+          const kbAngle = Utils.angle(this.x, this.y, enemy.x, enemy.y);
+          enemy.takeDamage(this.damage * (this.source ? this.source.damageMultiplier : 1), kbAngle, 120, game);
+          // Damage numbers
+          game.particles.spawnText(
+            enemy.x + Utils.randomRange(-8, 8),
+            enemy.y - 18,
+            `${Math.round(this.damage)}`,
+            '#ff9444'
+          );
+        }
+      }
+    }
+
+    this.lifetime -= dt;
+    if (this.lifetime <= 0) {
+      this.alive = false;
+    }
+  }
+
+  draw(ctx) {
+    const screen = Camera.worldToScreen(this.x, this.y);
+    ctx.save();
+
+    // Outer glow
+    const g = ctx.createRadialGradient(screen.x, screen.y, 0, screen.x, screen.y, this.radius * 1.6);
+    g.addColorStop(0, this.glow + '88');
+    g.addColorStop(0.6, this.color + '66');
+    g.addColorStop(1, this.color + '00');
+    ctx.fillStyle = g;
+    const drawRadius = (this.radius / Camera.scale) * (1 + Math.sin(performance.now() / 120) * 0.06);
+    ctx.beginPath();
+    ctx.arc(screen.x, screen.y, drawRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Core flash
+    ctx.globalAlpha = 0.9;
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(screen.x, screen.y, Math.max(4, drawRadius * 0.22), 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+}
