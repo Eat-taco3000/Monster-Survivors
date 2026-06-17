@@ -128,6 +128,7 @@ class Explosion extends Entity {
     this.source = (opts && opts.source) || null;
     this.type = 'explosion';
     this._applied = false; // whether damage has been applied already
+    this._hitEnemies = new Set();
   }
 
   update(dt, game) {
@@ -151,6 +152,7 @@ class Explosion extends Entity {
             `${Math.round(this.damage)}`,
             '#ff9444'
           );
+          this._hitEnemies.add(enemy);
         }
       }
     }
@@ -159,6 +161,18 @@ class Explosion extends Entity {
     if (this.lifetime <= 0) {
       this.alive = false;
     }
+  }
+
+  // Provide projectile-like compatibility methods to avoid game loop errors
+  hasHit(enemy) {
+    // After applying damage, report that we've already hit enemies so the projectile loop won't duplicate effects
+    return this._applied && this._hitEnemies.has(enemy);
+  }
+
+  onHitEnemy(enemy, game) {
+    // Explosion handles damage in update(); this is a no-op to satisfy projectile loop expectations
+    // But record the enemy if needed
+    this._hitEnemies.add(enemy);
   }
 
   draw(ctx) {
