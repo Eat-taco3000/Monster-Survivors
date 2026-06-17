@@ -196,3 +196,70 @@ class Enemy extends Entity {
 
   // ... draw methods unchanged ...
 }
+
+// Enemy factory
+const EnemyFactory = {
+  createVampire(x, y, difficultyMult = 1) {
+    return new Enemy(x, y, {
+      type: 'vampire',
+      health: Math.floor(30 * difficultyMult),
+      speed: 80 + (difficultyMult - 1) * 10,
+      damage: Math.floor(10 * difficultyMult),
+      radius: 16,
+      xpValue: 1
+    });
+  },
+
+  createZombie(x, y, difficultyMult = 1) {
+    return new Enemy(x, y, {
+      type: 'zombie',
+      health: Math.floor(50 * difficultyMult),  // More HP than vampire
+      speed: 45 + (difficultyMult - 1) * 5,    // Much slower
+      damage: Math.floor(15 * difficultyMult),
+      radius: 18,
+      xpValue: 2
+    });
+  },
+
+  createWerewolf(x, y, difficultyMult = 1) {
+    const w = new Enemy(x, y, {
+      type: 'werewolf',
+      health: Math.floor(20 * difficultyMult),  // Lower HP than vampire
+      speed: 160 + (difficultyMult - 1) * 15,  // Very fast
+      damage: Math.floor(12 * difficultyMult),
+      radius: 15,
+      xpValue: 1
+    });
+    w.knockbackDecay = 14; // Resists knockback more
+    return w;
+  },
+
+  createGhost(x, y, difficultyMult = 1) {
+    const g = new Enemy(x, y, {
+      type: 'ghost',
+      health: Math.floor(25 * difficultyMult),
+      speed: 55 + (difficultyMult - 1) * 8,   // Slow drifter
+      damage: Math.floor(8 * difficultyMult),
+      radius: 14,
+      xpValue: 1
+    });
+    g.preferRange = 140 + Math.floor(10 * (difficultyMult - 1));
+    g.shootCooldown = 0;
+    g.shootInterval = 2.0;
+    g.orbDamage = Math.floor(6 * difficultyMult);
+    return g;
+  },
+
+  createBat(x, y, difficultyMult = 1) {
+    const b = new Enemy(x, y, {
+      type: 'bat',
+      health: Math.floor(12 * difficultyMult),
+      speed: 160 + (difficultyMult - 1) * 20,
+      damage: Math.floor(6 * difficultyMult),
+      radius: 12,
+      xpValue: 1
+    });
+    b.silencesOnHit = true;
+    return b;
+  }
+};
