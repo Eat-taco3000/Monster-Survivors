@@ -139,7 +139,7 @@ const HUD = {
 
       // Weapon icon/background
       ctx.fillStyle = '#1a1a2e';
-      ctx.fillRect(padding, wy - 16, 180, 20);
+      ctx.fillRect(padding, wy - 16, 220, 20);
 
       // Weapon name and level
       ctx.fillStyle = weapon.color;
@@ -149,8 +149,17 @@ const HUD = {
       ctx.fillStyle = '#888888';
       ctx.font = '10px "Segoe UI", sans-serif';
       ctx.textAlign = 'right';
-      ctx.fillText(`Lv.${weapon.level}`, padding + 175, wy - 3);
+      ctx.fillText(`Lv.${weapon.level}`, padding + 195, wy - 3);
       ctx.textAlign = 'left';
+
+      // Extra info per weapon type
+      ctx.fillStyle = '#a8a8a8';
+      ctx.font = '9px "Segoe UI", sans-serif';
+      if (weapon.type === 'fireWand') {
+        ctx.fillText(`AoE: ${Math.round(weapon.aoeRadius)} | CD: ${weapon.baseCooldown.toFixed(2)}s`, padding + 6, wy + 10);
+      } else if (weapon.type === 'bloodBolt') {
+        ctx.fillText(`Dmg: ${Math.round(weapon.damage)} | Pierce: ${weapon.pierce}`, padding + 6, wy + 10);
+      }
     }
 
     // --- BOTTOM RIGHT: Controls hint (first 10 seconds) ---

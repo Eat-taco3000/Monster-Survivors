@@ -127,6 +127,8 @@ class Explosion extends Entity {
     this.glow = (opts && opts.glow) || '#ffb244';
     this.source = (opts && opts.source) || null;
     this.type = 'explosion';
+    this.knockback = (opts && opts.knockback) || 120; // ensure numeric
+    this.pierce = (opts && opts.pierce) || Infinity; // not used but provide
     this._applied = false; // whether damage has been applied already
     this._hitEnemies = new Set();
   }
@@ -144,12 +146,13 @@ class Explosion extends Entity {
         if (dist <= this.radius + enemy.radius) {
           // Knockback angle from explosion center toward enemy
           const kbAngle = Utils.angle(this.x, this.y, enemy.x, enemy.y);
-          enemy.takeDamage(this.damage * (this.source ? this.source.damageMultiplier : 1), kbAngle, 120, game);
+          const dmg = this.damage * (this.source ? this.source.damageMultiplier : 1);
+          enemy.takeDamage(dmg, kbAngle, this.knockback, game);
           // Damage numbers
           game.particles.spawnText(
             enemy.x + Utils.randomRange(-8, 8),
             enemy.y - 18,
-            `${Math.round(this.damage)}`,
+            `${Math.round(dmg)}`,
             '#ff9444'
           );
           this._hitEnemies.add(enemy);
@@ -185,9 +188,9 @@ class Explosion extends Entity {
     g.addColorStop(0.6, this.color + '66');
     g.addColorStop(1, this.color + '00');
     ctx.fillStyle = g;
-    const drawRadius = (this.radius / Camera.scale) * (1 + Math.sin(performance.now() / 120) * 0.06);
+    const drawRadius = (this.radius / Math.max(0.001, Camera.scale || 1)) * (1 + Math.sin(performance.now() / 120) * 0.06);
     ctx.beginPath();
-    ctx.arc(screen.x, screen.y, drawRadius, 0, Math.PI * 2);
+    ctx.arc(screen.x, screen.y, Math.max(2, drawRadius), 0, Math.PI * 2);
     ctx.fill();
 
     // Core flash
