@@ -135,21 +135,21 @@ const HUD = {
 
     for (let i = 0; i < WeaponSystem.weapons.length; i++) {
       const weapon = WeaponSystem.weapons[i];
-      const wy = weaponY - i * 25;
+      const wy = weaponY - i * 30;
 
       // Weapon icon/background
       ctx.fillStyle = '#1a1a2e';
-      ctx.fillRect(padding, wy - 16, 220, 20);
+      ctx.fillRect(padding, wy - 16, 260, 22);
 
       // Weapon name and level
-      ctx.fillStyle = weapon.color;
+      ctx.fillStyle = weapon.color || '#ffffff';
       ctx.font = 'bold 11px "Segoe UI", sans-serif';
       ctx.fillText(`⚔ ${weapon.name}`, padding + 5, wy - 3);
 
       ctx.fillStyle = '#888888';
       ctx.font = '10px "Segoe UI", sans-serif';
       ctx.textAlign = 'right';
-      ctx.fillText(`Lv.${weapon.level}`, padding + 195, wy - 3);
+      ctx.fillText(`Lv.${weapon.level}`, padding + 235, wy - 3);
       ctx.textAlign = 'left';
 
       // Extra info per weapon type
@@ -161,6 +161,12 @@ const HUD = {
         ctx.fillText(`AoE: ${aoe} | CD: ${cd}s`, padding + 6, wy + 10);
       } else if (weapon.type === 'bloodBolt') {
         ctx.fillText(`Dmg: ${Math.round(weapon.damage)} | Pierce: ${weapon.pierce}`, padding + 6, wy + 10);
+      } else if (weapon.type === 'iceStaff') {
+        // Show ability key and cooldown
+        const cdLeft = (typeof weapon.abilityCooldownRemaining === 'number' && weapon.abilityCooldownRemaining > 0)
+          ? `${weapon.abilityCooldownRemaining.toFixed(1)}s`
+          : 'Ready';
+        ctx.fillText(`E: ${cdLeft} | Radius: ${Math.round(weapon.abilityRadius)}`, padding + 6, wy + 10);
       }
     }
 
@@ -173,6 +179,7 @@ const HUD = {
       ctx.font = '12px "Segoe UI", sans-serif';
       ctx.fillText('WASD / Arrow Keys to move', canvasWidth / 2, ctx.canvas.height - 30);
       ctx.fillText('Weapons fire automatically', canvasWidth / 2, ctx.canvas.height - 14);
+      ctx.fillText('Press E to activate Ice Staff ability', canvasWidth / 2, ctx.canvas.height - 2);
     }
 
     ctx.restore();
