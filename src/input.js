@@ -1,10 +1,14 @@
 // Input handler - tracks keyboard state for 8-directional movement
 const Input = {
   keys: {},
+  keysPressed: {},
 
   init() {
     window.addEventListener('keydown', (e) => {
+      // Record key down state
       this.keys[e.code] = true;
+      this.keysPressed[e.code] = true; // used for edge-triggered inputs
+
       // Prevent default for game keys
       if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','KeyW','KeyA','KeyS','KeyD'].includes(e.code)) {
         e.preventDefault();
@@ -18,7 +22,15 @@ const Input = {
     // Reset on blur
     window.addEventListener('blur', () => {
       this.keys = {};
+      this.keysPressed = {};
     });
+  },
+
+  // Consume a keypress (edge-triggered). Returns true once per keydown.
+  consumeKey(code) {
+    const pressed = !!this.keysPressed[code];
+    if (pressed) this.keysPressed[code] = false;
+    return pressed;
   },
 
   // Get movement vector (8-directional)

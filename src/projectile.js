@@ -186,3 +186,92 @@ class Explosion extends Entity {
     ctx.restore();
   }
 }
+
+// IceField: follows the player and applies periodic damage and slow to nearby enemies
+class IceField extends Entity {
+  constructor(followTarget, radius, damagePerTick, duration, tickInterval = 0.5, opts = {}) {
+    super(followTarget.x, followTarget.y, radius || 80);
+    this.followTarget = followTarget;
+    this.radius = Math.max(0, Number(radius) || 0);
+    this.damagePerTick = Math.max(0, Number(damagePerTick) || 0);
+    this.duration = Number(duration) || 3.0;
+    this.tickInterval = Number(tickInterval) || 0.5;
+    this.color = (opts && opts.color) || '#66ddff';
+    this.glow = (opts && opts.glow) || '#99eeff';
+    this.slowFactor = Number(opts && opts.slowFactor) || 0.6;
+    this.slowDuration = Number(opts && opts.slowDuration) || 2.0;
+    this.type = 'iceField';
+    this._time = 0;
+    this._tickTimer = 0;
+    this._applied = false;
+  }
+
+  update(dt, game) {
+    super.update(dt);
+
+    // Follow the player
+    if (this.followTarget) {
+      this.x = this.followTarget.x;
+      this.y = this.followTarget.y;
+    }
+
+    this._time += dt;
+    this._tickTimer += dt;
+
+    // On each tick, damage enemies inside radius and apply slow
+    if (this._tickTimer >= this.tickInterval) {
+      this._tickTimer -= this.tickInterval;
+      for (const enemy of game.enemies) {
+        if (!enemy.alive) continue;
+        const dist = Utils.distance(this.x, this.y, enemy.x, enemy.y);
+        if (dist <= this.radius + enemy.radius) {
+          try {
+            enemy.takeDamage(this.damagePerTick * (this.followTarget && this.followTarget.damageMultiplier ? this.followTarget.damageMultiplier : 1), Utils.angle(this.x, this.y, enemy.x, enemy.y), 0, game);
+            // Apply slow: set slowFactor and slowTimer on enemy (enemy handles decay)
+            if (!enemy.slowFactor || enemy.slowFactor > this.slowFactor) {
+              enemy.slowFactor = this.slowFactor;
+            }
+            enemy.slowTimer = Math.max(enemy.slowTimer || 0, this.slowDuration);
+
+            game.particles.spawnText(enemy.x + Utils.randomRange(-6, 6), enemy.y - 18, `${Math.round(this.damagePerTick)}`, '#aee6ff');
+          } catch (err) {
+            console.error('IceField tick error', err, { ice: this, enemy });
+          }
+        }
+      }
+    }
+
+    // Duration
+    this.duration -= dt;
+    if (this.duration <= 0) this.alive = false;
+  }
+
+  // Compatibility with projectile collision checks
+  hasHit(enemy) { return false; }
+  onHitEnemy(enemy, game) { /* no-op */ }
+
+  draw(ctx) {
+    const screen = Camera.worldToScreen(this.x, this.y);
+    ctx.save();
+
+    // Soft icy ring
+    const g = ctx.createRadialGradient(screen.x, screen.y, this.radius * 0.2, screen.x, screen.y, this.radius);
+    g.addColorStop(0, this.glow + '22');
+    g.addColorStop(0.6, this.color + '55');
+    g.addColorStop(1, this.color + '00');
+    ctx.fillStyle = g;
+    const drawRadius = (this.radius / Math.max(0.001, Camera.scale || 1));
+    ctx.beginPath();
+    ctx.arc(screen.x, screen.y, Math.max(2, drawRadius), 0, Math.PI * 2);
+    ctx.fill();
+
+    // Center sparkle
+    ctx.globalAlpha = 0.9;
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(screen.x, screen.y, Math.max(3, drawRadius * 0.06), 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+}

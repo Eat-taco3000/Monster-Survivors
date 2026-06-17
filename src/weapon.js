@@ -36,20 +36,38 @@ const WeaponSystem = {
           glowColor: '#ff2200'
         };
       case 'fireWand':
-        // New Fire Wand: spawns an explosion at the target that deals AoE damage
+        // Fire Wand: spawns an explosion at the target that deals AoE damage
         return {
           type: 'fireWand',
           name: 'Fire Wand',
           cooldown: 0,
           baseCooldown: 1.0,
-          damage: 12,            // base damage applied to each enemy in AoE
-          aoeRadius: 60,         // base explosion radius in world units
-          speed: 0,              // not a projectile; explosion is instant-ish
-          lifetime: 0.35,        // visual lifetime of explosion entity
+          damage: 12,
+          aoeRadius: 60,
+          lifetime: 0.35,
           level: 1,
           maxLevel: 8,
           color: '#ff7a00',
           glowColor: '#ffb244'
+        };
+      case 'iceStaff':
+        // Ice Staff: an activated ability (press E) that creates a slow/damage field around player
+        return {
+          type: 'iceStaff',
+          name: 'Ice Staff',
+          // Ability properties
+          abilityCooldown: 5.0,              // seconds between uses
+          abilityCooldownRemaining: 0,       // runtime remaining cooldown
+          abilityDuration: 4.0,              // how long the slow field persists
+          abilityTickInterval: 0.5,          // damage tick interval
+          abilityDamagePerTick: 6,           // damage per tick to enemies inside field
+          abilityRadius: 100,                // radius of the slow field
+          slowFactor: 0.6,                   // enemies are slowed to 60% speed
+          slowDuration: 2.0,                 // slow lasts this long on enemies
+          level: 1,
+          maxLevel: 8,
+          color: '#66ddff',
+          glowColor: '#99eeff'
         };
       default:
         return null;
@@ -58,7 +76,13 @@ const WeaponSystem = {
 
   update(dt, game) {
     for (const weapon of this.weapons) {
+      // weapon base cooldowns for auto-fire
       weapon.cooldown -= dt;
+      // ability cooldowns
+      if (typeof weapon.abilityCooldownRemaining === 'number') {
+        weapon.abilityCooldownRemaining = Math.max(0, weapon.abilityCooldownRemaining - dt);
+      }
+
       if (weapon.cooldown <= 0) {
         // Don't fire if player is silenced
         if (!game.player.isSilenced) {
@@ -186,12 +210,27 @@ const WeaponSystem = {
         else if (weapon.level === 7) { weapon.aoeRadius += 16; weapon.damage += 10; }
         else if (weapon.level === 8) { weapon.damage += 16; weapon.aoeRadius += 22; weapon.baseCooldown *= 0.85; }
         break;
+      case 'iceStaff':
+        // Ice staff ability scales
+        if (weapon.level === 2) { weapon.abilityDamagePerTick += 2; weapon.abilityRadius += 8; }
+        else if (weapon.level === 3) { weapon.abilityDamagePerTick += 2; weapon.abilityRadius += 10; }
+        else if (weapon.level === 4) { weapon.abilityDuration += 0.5; weapon.abilityDamagePerTick += 3; }
+        else if (weapon.level === 5) { weapon.abilityDamagePerTick += 4; weapon.abilityRadius += 12; }
+        else if (weapon.level === 6) { weapon.abilityCooldown = Math.max(0.5, weapon.abilityCooldown - 0.4); weapon.abilityDamagePerTick += 5; }
+        else if (weapon.level === 7) { weapon.abilityDuration += 1.0; weapon.abilityDamagePerTick += 6; }
+        else if (weapon.level === 8) { weapon.abilityDamagePerTick += 10; weapon.abilityRadius += 18; weapon.abilityCooldown = Math.max(0.3, weapon.abilityCooldown - 0.6); }
+        break;
     }
 
     // Sanitize numeric properties to avoid NaN/Infinity
     weapon.baseCooldown = Math.max(0.05, Number(weapon.baseCooldown) || 0.05);
     weapon.damage = Math.max(0, Number(weapon.damage) || 0);
     weapon.aoeRadius = Math.max(0, Number(weapon.aoeRadius) || 0);
+    weapon.abilityCooldown = Math.max(0, Number(weapon.abilityCooldown) || 0);
+    weapon.abilityDuration = Math.max(0, Number(weapon.abilityDuration) || 0);
+    weapon.abilityDamagePerTick = Math.max(0, Number(weapon.abilityDamagePerTick) || 0);
+    weapon.abilityTickInterval = Math.max(0.1, Number(weapon.abilityTickInterval) || 0.5);
+    weapon.abilityRadius = Math.max(0, Number(weapon.abilityRadius) || 0);
     weapon.level = Math.min(weapon.maxLevel || 8, Math.max(1, Number(weapon.level) || 1));
 
     return true;
@@ -226,6 +265,20 @@ const WeaponSystem = {
         ctx.fillStyle = gradient;
         ctx.beginPath();
         ctx.arc(screen.x, screen.y, 40, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      } else if (weapon.type === 'iceStaff') {
+        // Subtle icy glow
+        const screen = Camera.worldToScreen(game.player.x, game.player.y);
+        const pulse = Math.sin(performance.now() / 250) * 0.06 + 0.1;
+        ctx.save();
+        ctx.globalAlpha = pulse;
+        const gradient = ctx.createRadialGradient(screen.x, screen.y, 6, screen.x, screen.y, 48);
+        gradient.addColorStop(0, weapon.color + '22');
+        gradient.addColorStop(1, '#00000000');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(screen.x, screen.y, 48, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
       }

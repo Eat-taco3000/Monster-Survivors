@@ -64,7 +64,7 @@ const Leveling = {
 
   // Weapons known in the game. Update this list when adding new weapon types.
   knownWeapons() {
-    return ['bloodBolt', 'fireWand'];
+    return ['bloodBolt', 'fireWand', 'iceStaff'];
   },
 
   // UI: present choices to the player to level or take a weapon
