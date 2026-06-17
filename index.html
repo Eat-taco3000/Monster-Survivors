@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vampire Survivors</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a0a0a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    canvas {
+      border: 2px solid #1a1a2e;
+      image-rendering: pixelated;
+    }
+    #start-screen, #game-over-screen {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      color: #e0e0e0;
+      text-align: center;
+    }
+    #game-over-screen {
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(10, 10, 10, 0.85);
+      backdrop-filter: grayscale(1) brightness(0.4);
+    }
+    #start-screen h1, #game-over-screen h1 {
+      font-size: 48px;
+      margin-bottom: 10px;
+      text-shadow: 0 0 20px rgba(180, 0, 0, 0.8);
+      color: #cc0000;
+    }
+    #start-screen h2 {
+      font-size: 24px;
+      margin-bottom: 30px;
+      color: #888;
+    }
+    .btn {
+      padding: 15px 40px;
+      font-size: 20px;
+      background: linear-gradient(135deg, #8b0000, #cc0000);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    .btn:hover {
+      background: linear-gradient(135deg, #cc0000, #ff0000);
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(200, 0, 0, 0.5);
+    }
+    #game-over-screen .stats {
+      margin: 20px 0;
+      font-size: 18px;
+      line-height: 1.8;
+    }
+    #game-over-screen .stats span {
+      color: #cc0000;
+      font-weight: bold;
+    }
+    .controls-hint {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #666;
+    }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+
+  <div id="start-screen">
+    <h1>VAMPIRE SURVIVORS</h1>
+    <h2>Survive the horde</h2>
+    <button class="btn" id="startBtn">Start Game</button>
+    <div class="controls-hint">
+      <p>WASD or Arrow Keys to move</p>
+      <p>Weapons fire automatically</p>
+    </div>
+  </div>
+
+  <div id="game-over-screen" class="hidden">
+    <h1>GAME OVER</h1>
+    <div class="stats">
+      <p>Level Reached: <span id="finalLevel">1</span></p>
+      <p>Enemies Defeated: <span id="finalKills">0</span></p>
+      <p>Time Survived: <span id="finalTime">0:00</span></p>
+    </div>
+    <button class="btn" id="restartBtn">Play Again</button>
+  </div>
+
+  <script src="src/utils.js"></script>
+  <script src="src/input.js"></script>
+  <script src="src/camera.js"></script>
+  <script src="src/entity.js"></script>
+  <script src="src/player.js"></script>
+  <script src="src/projectile.js"></script>
+  <script src="src/weapon.js"></script>
+  <script src="src/ghostorb.js"></script>
+  <script src="src/enemy.js"></script>
+  <script src="src/xpgem.js"></script>
+  <script src="src/particles.js"></script>
+  <script src="src/leveling.js"></script>
+  <script src="src/spawner.js"></script>
+  <script src="src/hud.js"></script>
+  <script src="src/game.js"></script>
+  <script src="src/main.js"></script>
+</body>
+</html>
