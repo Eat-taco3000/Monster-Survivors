@@ -77,6 +77,82 @@
       color: #666;
     }
     .hidden { display: none !important; }
+
+    /* Weapon selection modal */
+    #weapon-select-modal {
+      position: absolute;
+      z-index: 20;
+      top: 0; left: 0; right: 0; bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    #weapon-select-modal .modal-inner {
+      pointer-events: auto;
+      background: rgba(18,18,26,0.95);
+      border: 2px solid #33334a;
+      padding: 18px;
+      width: 520px;
+      max-width: calc(100% - 40px);
+      border-radius: 8px;
+      text-align: center;
+      color: #e8e8e8;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.7);
+    }
+    #weapon-select-modal h3 {
+      margin-bottom: 8px;
+      color: #ffd86b;
+    }
+    #weapon-select-modal p {
+      color: #a8a8b8;
+      margin-bottom: 12px;
+    }
+    .weapon-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(180deg, #12121a, #0c0c12);
+      border: 1px solid #22223a;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 6px;
+    }
+    .weapon-option .left {
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .weapon-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      display:inline-block;
+      box-shadow: 0 0 10px rgba(0,0,0,0.6);
+    }
+    .weapon-option .desc {
+      text-align: left;
+    }
+    .weapon-option button {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .btn-get {
+      background: linear-gradient(90deg,#ff8a00,#ffd86b);
+      color: #241200;
+    }
+    .btn-level {
+      background: linear-gradient(90deg,#4488ff,#66b3ff);
+      color: #002036;
+    }
+    .btn-skip {
+      margin-top: 10px;
+      background: linear-gradient(90deg,#4a4a4a,#666666);
+      color: #ffffff;
+    }
   </style>
 </head>
 <body>
@@ -100,6 +176,16 @@
       <p>Time Survived: <span id="finalTime">0:00</span></p>
     </div>
     <button class="btn" id="restartBtn">Play Again</button>
+  </div>
+
+  <!-- Weapon selection modal (shown on level up) -->
+  <div id="weapon-select-modal" class="hidden" aria-hidden="true">
+    <div class="modal-inner">
+      <h3>Choose a weapon to upgrade</h3>
+      <p>Pick a weapon to level up, or take a new weapon if you don't have it yet.</p>
+      <div id="weapon-options"></div>
+      <button class="btn btn-skip" id="weapon-skip-btn">Skip</button>
+    </div>
   </div>
 
   <script src="src/utils.js"></script>

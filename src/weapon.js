@@ -35,6 +35,22 @@ const WeaponSystem = {
           color: '#cc0000',
           glowColor: '#ff2200'
         };
+      case 'fireWand':
+        // New Fire Wand: spawns an explosion at the target that deals AoE damage
+        return {
+          type: 'fireWand',
+          name: 'Fire Wand',
+          cooldown: 0,
+          baseCooldown: 1.0,
+          damage: 12,            // base damage applied to each enemy in AoE
+          aoeRadius: 60,         // base explosion radius in world units
+          speed: 0,              // not a projectile; explosion is instant-ish
+          lifetime: 0.35,        // visual lifetime of explosion entity
+          level: 1,
+          maxLevel: 8,
+          color: '#ff7a00',
+          glowColor: '#ffb244'
+        };
       default:
         return null;
     }
@@ -56,8 +72,31 @@ const WeaponSystem = {
   fire(weapon, game) {
     if (game.enemies.length === 0) return;
 
-    // Find nearest enemies to target
     const player = game.player;
+
+    if (weapon.type === 'fireWand') {
+      // Fire Wand: target the nearest enemy and create an explosion at their position
+      const targets = this.findTargets(weapon, game);
+      if (targets.length === 0) return;
+      // For balance create one explosion per weapon fire aimed at the nearest enemy
+      const target = targets[0];
+      const ex = new Explosion(
+        target.x,
+        target.y,
+        weapon.aoeRadius + (weapon.level - 1) * 8,                  // grow radius by level
+        weapon.damage + (weapon.level - 1) * 4,                    // scale damage by level
+        weapon.lifetime,
+        { color: weapon.color, glow: weapon.glowColor, source: player }
+      );
+      game.projectiles.push(ex);
+
+      // Visual and particle feedback
+      game.particles.spawnBurst(target.x, target.y, weapon.color, 10);
+      game.particles.spawnBurst(target.x, target.y, '#ffffff', 6);
+      return;
+    }
+
+    // Default projectile weapons (bloodBolt etc.)
     const targets = this.findTargets(weapon, game);
 
     for (let i = 0; i < targets.length; i++) {
@@ -108,7 +147,7 @@ const WeaponSystem = {
       .sort((a, b) => player.distanceTo(a) - player.distanceTo(b));
 
     // Target the closest enemies
-    const count = Math.min(weapon.projectileCount, sorted.length);
+    const count = Math.min(weapon.projectileCount || 1, sorted.length);
     return sorted.slice(0, count);
   },
 
@@ -127,6 +166,15 @@ const WeaponSystem = {
         else if (weapon.level === 6) { weapon.pierce = 3; weapon.damage = 35; }
         else if (weapon.level === 7) { weapon.projectileCount = 3; weapon.damage = 40; weapon.baseCooldown = 0.5; }
         else if (weapon.level === 8) { weapon.damage = 50; weapon.pierce = 5; weapon.homingStrength = 6; }
+        break;
+      case 'fireWand':
+        if (weapon.level === 2) { weapon.damage += 3; weapon.aoeRadius += 6; weapon.baseCooldown *= 0.95; }
+        else if (weapon.level === 3) { weapon.aoeRadius += 8; weapon.damage += 4; }
+        else if (weapon.level === 4) { weapon.baseCooldown *= 0.95; weapon.damage += 5; }
+        else if (weapon.level === 5) { weapon.aoeRadius += 12; weapon.damage += 6; }
+        else if (weapon.level === 6) { weapon.baseCooldown *= 0.9; weapon.damage += 8; }
+        else if (weapon.level === 7) { weapon.aoeRadius += 16; weapon.damage += 10; }
+        else if (weapon.level === 8) { weapon.damage += 16; weapon.aoeRadius += 22; weapon.baseCooldown *= 0.85; }
         break;
     }
     return true;
@@ -147,6 +195,20 @@ const WeaponSystem = {
         ctx.fillStyle = gradient;
         ctx.beginPath();
         ctx.arc(screen.x, screen.y, 35, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      } else if (weapon.type === 'fireWand') {
+        // Subtle orange glow
+        const screen = Camera.worldToScreen(game.player.x, game.player.y);
+        const pulse = Math.sin(performance.now() / 300) * 0.08 + 0.12;
+        ctx.save();
+        ctx.globalAlpha = pulse;
+        const gradient = ctx.createRadialGradient(screen.x, screen.y, 8, screen.x, screen.y, 40);
+        gradient.addColorStop(0, weapon.color + '33');
+        gradient.addColorStop(1, '#00000000');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(screen.x, screen.y, 40, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
       }
