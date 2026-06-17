@@ -119,64 +119,47 @@ class Projectile extends Entity {
 // Explosion class for AoE attacks (used by Fire Wand)
 class Explosion extends Entity {
   constructor(x, y, radius, damage, lifetime = 0.4, opts = {}) {
-    super(x, y, radius);
-    this.radius = radius;
-    this.damage = damage;
-    this.lifetime = lifetime;
+    super(x, y, radius || 16);
+    this.radius = Math.max(0, Number(radius) || 0);
+    this.damage = Math.max(0, Number(damage) || 0);
+    this.lifetime = Number(lifetime) || 0.25;
     this.color = (opts && opts.color) || '#ff7a00';
     this.glow = (opts && opts.glow) || '#ffb244';
     this.source = (opts && opts.source) || null;
     this.type = 'explosion';
-    this.knockback = (opts && opts.knockback) || 120; // ensure numeric
-    this.pierce = (opts && opts.pierce) || Infinity; // not used but provide
-    this._applied = false; // whether damage has been applied already
+    this.knockback = Number(opts.knockback) || 120;
+    this._applied = false;
     this._hitEnemies = new Set();
   }
 
   update(dt, game) {
     super.update(dt);
 
-    // Apply damage on the first update frame after creation
     if (!this._applied) {
       this._applied = true;
-      // Apply damage to all enemies within radius
       for (const enemy of game.enemies) {
-        if (!enemy.alive) continue;
-        const dist = Utils.distance(this.x, this.y, enemy.x, enemy.y);
-        if (dist <= this.radius + enemy.radius) {
-          // Knockback angle from explosion center toward enemy
-          const kbAngle = Utils.angle(this.x, this.y, enemy.x, enemy.y);
-          const dmg = this.damage * (this.source ? this.source.damageMultiplier : 1);
-          enemy.takeDamage(dmg, kbAngle, this.knockback, game);
-          // Damage numbers
-          game.particles.spawnText(
-            enemy.x + Utils.randomRange(-8, 8),
-            enemy.y - 18,
-            `${Math.round(dmg)}`,
-            '#ff9444'
-          );
-          this._hitEnemies.add(enemy);
+        try {
+          if (!enemy || !enemy.alive) continue;
+          const dist = Utils.distance(this.x, this.y, enemy.x, enemy.y);
+          if (dist <= this.radius + enemy.radius) {
+            const kbAngle = Utils.angle(this.x, this.y, enemy.x, enemy.y);
+            const dmg = this.damage * (this.source && this.source.damageMultiplier ? this.source.damageMultiplier : 1);
+            enemy.takeDamage(dmg, kbAngle, this.knockback, game);
+            game.particles.spawnText(enemy.x + Utils.randomRange(-8, 8), enemy.y - 18, `${Math.round(dmg)}`, '#ff9444');
+            this._hitEnemies.add(enemy);
+          }
+        } catch (err) {
+          console.error('Explosion apply error', err, { explosion: this, enemy });
         }
       }
     }
 
     this.lifetime -= dt;
-    if (this.lifetime <= 0) {
-      this.alive = false;
-    }
+    if (this.lifetime <= 0) this.alive = false;
   }
 
-  // Provide projectile-like compatibility methods to avoid game loop errors
-  hasHit(enemy) {
-    // After applying damage, report that we've already hit enemies so the projectile loop won't duplicate effects
-    return this._applied && this._hitEnemies.has(enemy);
-  }
-
-  onHitEnemy(enemy, game) {
-    // Explosion handles damage in update(); this is a no-op to satisfy projectile loop expectations
-    // But record the enemy if needed
-    this._hitEnemies.add(enemy);
-  }
+  hasHit(enemy) { return this._hitEnemies.has(enemy); }
+  onHitEnemy(enemy, game) { this._hitEnemies.add(enemy); }
 
   draw(ctx) {
     const screen = Camera.worldToScreen(this.x, this.y);

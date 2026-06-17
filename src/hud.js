@@ -156,7 +156,9 @@ const HUD = {
       ctx.fillStyle = '#a8a8a8';
       ctx.font = '9px "Segoe UI", sans-serif';
       if (weapon.type === 'fireWand') {
-        ctx.fillText(`AoE: ${Math.round(weapon.aoeRadius)} | CD: ${weapon.baseCooldown.toFixed(2)}s`, padding + 6, wy + 10);
+        const aoe = isFinite(Number(weapon.aoeRadius)) ? Math.round(Number(weapon.aoeRadius)) : '--';
+        const cd = isFinite(Number(weapon.baseCooldown)) ? Number(weapon.baseCooldown).toFixed(2) : '--';
+        ctx.fillText(`AoE: ${aoe} | CD: ${cd}s`, padding + 6, wy + 10);
       } else if (weapon.type === 'bloodBolt') {
         ctx.fillText(`Dmg: ${Math.round(weapon.damage)} | Pierce: ${weapon.pierce}`, padding + 6, wy + 10);
       }

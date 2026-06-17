@@ -75,19 +75,29 @@ const WeaponSystem = {
     const player = game.player;
 
     if (weapon.type === 'fireWand') {
-      // Fire Wand: target the nearest enemy and create an explosion at their position
       const targets = this.findTargets(weapon, game);
       if (targets.length === 0) return;
-      // For balance create one explosion per weapon fire aimed at the nearest enemy
       const target = targets[0];
+
+      // Sanitize numeric fields (prevents NaN/Infinity causing exceptions)
+      const baseAoe = Number(weapon.aoeRadius) || 0;
+      const baseDmg = Number(weapon.damage) || 0;
+      const lvl = Number(weapon.level) || 1;
+
+      // Clamp to reasonable ranges
+      const aoe = Math.max(8, Math.min(400, baseAoe + (lvl - 1) * 8));
+      const dmg = Math.max(1, Math.min(10000, baseDmg + (lvl - 1) * 4));
+      const life = Number(weapon.lifetime) || 0.25;
+
       const ex = new Explosion(
         target.x,
         target.y,
-        weapon.aoeRadius + (weapon.level - 1) * 8,                  // grow radius by level
-        weapon.damage + (weapon.level - 1) * 4,                    // scale damage by level
-        weapon.lifetime,
-        { color: weapon.color, glow: weapon.glowColor, source: player }
+        aoe,
+        dmg,
+        life,
+        { color: weapon.color, glow: weapon.glowColor, source: game.player }
       );
+
       game.projectiles.push(ex);
 
       // Visual and particle feedback
@@ -177,6 +187,13 @@ const WeaponSystem = {
         else if (weapon.level === 8) { weapon.damage += 16; weapon.aoeRadius += 22; weapon.baseCooldown *= 0.85; }
         break;
     }
+
+    // Sanitize numeric properties to avoid NaN/Infinity
+    weapon.baseCooldown = Math.max(0.05, Number(weapon.baseCooldown) || 0.05);
+    weapon.damage = Math.max(0, Number(weapon.damage) || 0);
+    weapon.aoeRadius = Math.max(0, Number(weapon.aoeRadius) || 0);
+    weapon.level = Math.min(weapon.maxLevel || 8, Math.max(1, Number(weapon.level) || 1));
+
     return true;
   },
 
