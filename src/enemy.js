@@ -486,7 +486,7 @@ drawVampire(ctx, sx, sy) {
 
     ctx.restore();
   }
-
+}
 // Enemy factory
 const EnemyFactory = {
   createVampire(x, y, difficultyMult = 1) {
