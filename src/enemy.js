@@ -197,6 +197,296 @@ class Enemy extends Entity {
   // ... draw methods unchanged ...
 }
 
+drawVampire(ctx, sx, sy) {
+    const flash = this.flashTimer > 0;
+
+    // Cape (dark swoosh behind)
+    const bobY = Math.sin(this.animTimer) * 2;
+    ctx.fillStyle = flash ? '#ffffff' : '#1a0a0a';
+    ctx.beginPath();
+    ctx.moveTo(sx - 12, sy - 8 + bobY);
+    ctx.lineTo(sx - 16, sy + 12 + bobY);
+    ctx.lineTo(sx + 16, sy + 12 + bobY);
+    ctx.lineTo(sx + 12, sy - 8 + bobY);
+    ctx.closePath();
+    ctx.fill();
+
+    // Body
+    ctx.fillStyle = flash ? '#ffffff' : '#2a1a2e';
+    ctx.beginPath();
+    ctx.arc(sx, sy + bobY, this.radius - 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Body outline
+    ctx.strokeStyle = flash ? '#ffffff' : '#1a0a1e';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(sx, sy + bobY, this.radius - 2, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Collar / high collar effect
+    ctx.fillStyle = flash ? '#ffffff' : '#1a0a1e';
+    ctx.beginPath();
+    ctx.moveTo(sx - 8, sy - 10 + bobY);
+    ctx.lineTo(sx - 4, sy - 14 + bobY);
+    ctx.lineTo(sx, sy - 10 + bobY);
+    ctx.lineTo(sx + 4, sy - 14 + bobY);
+    ctx.lineTo(sx + 8, sy - 10 + bobY);
+    ctx.closePath();
+    ctx.fill();
+
+    // Glowing red eyes
+    const eyeGlow = Math.sin(this.animTimer * 2) * 0.3 + 0.7;
+    ctx.save();
+    ctx.shadowBlur = 6;
+    ctx.shadowColor = '#ff0000';
+    ctx.fillStyle = `rgba(255, 0, 0, ${eyeGlow})`;
+    // Left eye
+    ctx.beginPath();
+    ctx.arc(sx - 5, sy - 3 + bobY, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+    // Right eye
+    ctx.beginPath();
+    ctx.arc(sx + 5, sy - 3 + bobY, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // Fangs
+    ctx.fillStyle = '#dddddd';
+    ctx.beginPath();
+    ctx.moveTo(sx - 3, sy + 2 + bobY);
+    ctx.lineTo(sx - 2, sy + 6 + bobY);
+    ctx.lineTo(sx - 1, sy + 2 + bobY);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(sx + 1, sy + 2 + bobY);
+    ctx.lineTo(sx + 2, sy + 6 + bobY);
+    ctx.lineTo(sx + 3, sy + 2 + bobY);
+    ctx.fill();
+
+    // Inner highlight
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.beginPath();
+    ctx.arc(sx - 3, sy - 5 + bobY, 6, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  drawZombie(ctx, sx, sy) {
+    const flash = this.flashTimer > 0;
+    const bobY = Math.sin(this.animTimer * 0.8) * 1.5; // Slow shamble
+
+    // Body - sickly green
+    ctx.fillStyle = flash ? '#ffffff' : '#3a5c2a';
+    ctx.beginPath();
+    ctx.arc(sx, sy + bobY, this.radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = flash ? '#ffffff' : '#2a4a1a';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(sx, sy + bobY, this.radius, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Torn clothing patches
+    ctx.fillStyle = flash ? '#ffffff' : '#556b2f';
+    ctx.fillRect(sx - 6, sy - 4 + bobY, 5, 8);
+    ctx.fillRect(sx + 2, sy - 2 + bobY, 4, 6);
+
+    // Rotten eyes - X-shaped
+    ctx.strokeStyle = flash ? '#ffffff' : '#ff4400';
+    ctx.lineWidth = 2;
+    // Left eye X
+    ctx.beginPath();
+    ctx.moveTo(sx - 7, sy - 6 + bobY); ctx.lineTo(sx - 3, sy - 2 + bobY);
+    ctx.moveTo(sx - 3, sy - 6 + bobY); ctx.lineTo(sx - 7, sy - 2 + bobY);
+    ctx.stroke();
+    // Right eye X
+    ctx.beginPath();
+    ctx.moveTo(sx + 3, sy - 6 + bobY); ctx.lineTo(sx + 7, sy - 2 + bobY);
+    ctx.moveTo(sx + 7, sy - 6 + bobY); ctx.lineTo(sx + 3, sy - 2 + bobY);
+    ctx.stroke();
+
+    // Exposed teeth / mouth
+    ctx.fillStyle = '#cccccc';
+    for (let i = 0; i < 4; i++) {
+      ctx.fillRect(sx - 5 + i * 3, sy + 4 + bobY, 2, 4);
+    }
+  }
+
+  drawWerewolf(ctx, sx, sy) {
+    const flash = this.flashTimer > 0;
+    const runBob = Math.sin(this.animTimer * 6) * 3; // Fast run cycle
+
+    // Body - dark brown/grey fur
+    ctx.fillStyle = flash ? '#ffffff' : '#4a3520';
+    ctx.beginPath();
+    ctx.arc(sx, sy + runBob, this.radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = flash ? '#ffffff' : '#2e2010';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(sx, sy + runBob, this.radius, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Ears (pointy wolf ears)
+    ctx.fillStyle = flash ? '#ffffff' : '#4a3520';
+    ctx.beginPath();
+    ctx.moveTo(sx - 8, sy - 10 + runBob);
+    ctx.lineTo(sx - 13, sy - 20 + runBob);
+    ctx.lineTo(sx - 2, sy - 10 + runBob);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(sx + 8, sy - 10 + runBob);
+    ctx.lineTo(sx + 13, sy - 20 + runBob);
+    ctx.lineTo(sx + 2, sy - 10 + runBob);
+    ctx.closePath();
+    ctx.fill();
+
+    // Inner ear
+    ctx.fillStyle = '#8b4513';
+    ctx.beginPath();
+    ctx.moveTo(sx - 8, sy - 11 + runBob);
+    ctx.lineTo(sx - 12, sy - 19 + runBob);
+    ctx.lineTo(sx - 3, sy - 11 + runBob);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(sx + 8, sy - 11 + runBob);
+    ctx.lineTo(sx + 12, sy - 19 + runBob);
+    ctx.lineTo(sx + 3, sy - 11 + runBob);
+    ctx.closePath();
+    ctx.fill();
+
+    // Yellow eyes glow
+    ctx.save();
+    ctx.shadowBlur = 5;
+    ctx.shadowColor = '#ffaa00';
+    ctx.fillStyle = flash ? '#ffffff' : '#ffcc00';
+    ctx.beginPath();
+    ctx.arc(sx - 5, sy - 3 + runBob, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(sx + 5, sy - 3 + runBob, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // Claws / snout
+    ctx.fillStyle = flash ? '#ffffff' : '#ccbbaa';
+    ctx.fillRect(sx - 4, sy + 3 + runBob, 8, 4);
+    ctx.strokeStyle = '#888';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(sx - 3, sy + 7 + runBob); ctx.lineTo(sx - 2, sy + 11 + runBob);
+    ctx.moveTo(sx, sy + 7 + runBob);     ctx.lineTo(sx, sy + 11 + runBob);
+    ctx.moveTo(sx + 3, sy + 7 + runBob); ctx.lineTo(sx + 2, sy + 11 + runBob);
+    ctx.stroke();
+  }
+
+  drawGhost(ctx, sx, sy) {
+    const flash = this.flashTimer > 0;
+    const t = performance.now() / 800;
+    const bobY = Math.sin(t) * 5;  // Floating bob
+    const alpha = Math.sin(t * 1.3) * 0.15 + 0.75; // Phasing opacity
+
+    ctx.save();
+    ctx.globalAlpha = flash ? 1 : alpha;
+
+    // Ghostly body - semi-transparent white/blue
+    const gradient = ctx.createRadialGradient(sx, sy + bobY, 2, sx, sy + bobY, this.radius + 4);
+    gradient.addColorStop(0, flash ? '#ffffff' : '#aaddff');
+    gradient.addColorStop(0.6, flash ? '#ccccff' : '#6699cc');
+    gradient.addColorStop(1, 'rgba(100,150,220,0)');
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(sx, sy + bobY, this.radius + 4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Core body shape (rounded top, wispy bottom)
+    ctx.fillStyle = flash ? '#ffffff' : 'rgba(180, 210, 255, 0.8)';
+    ctx.beginPath();
+    ctx.arc(sx, sy - 2 + bobY, this.radius, Math.PI, 0); // Top half circle
+    ctx.lineTo(sx + this.radius, sy + 8 + bobY);
+    // Wavy bottom
+    ctx.quadraticCurveTo(sx + this.radius * 0.6, sy + 14 + bobY, sx + this.radius * 0.3, sy + 10 + bobY);
+    ctx.quadraticCurveTo(sx, sy + 16 + bobY, sx - this.radius * 0.3, sy + 10 + bobY);
+    ctx.quadraticCurveTo(sx - this.radius * 0.6, sy + 14 + bobY, sx - this.radius, sy + 8 + bobY);
+    ctx.closePath();
+    ctx.fill();
+
+    // Dark hollow eyes
+    ctx.globalAlpha = flash ? 0.5 : 0.9;
+    ctx.fillStyle = '#001133';
+    ctx.beginPath();
+    ctx.ellipse(sx - 5, sy - 4 + bobY, 4, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(sx + 5, sy - 4 + bobY, 4, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  drawBat(ctx, sx, sy) {
+    const flash = this.flashTimer > 0;
+    const wingFlap = Math.sin(this.animTimer * 15) * 0.4; // Very fast wing flap
+    const bobY = Math.sin(this.animTimer * 8) * 2;
+
+    ctx.save();
+
+    // Wings
+    ctx.fillStyle = flash ? '#ffffff' : '#220022';
+    // Left wing
+    ctx.beginPath();
+    ctx.moveTo(sx, sy + bobY);
+    ctx.quadraticCurveTo(sx - 14, sy - 8 + wingFlap * 12 + bobY, sx - 22, sy + bobY);
+    ctx.quadraticCurveTo(sx - 16, sy + 8 - wingFlap * 5 + bobY, sx, sy + 4 + bobY);
+    ctx.closePath();
+    ctx.fill();
+    // Right wing
+    ctx.beginPath();
+    ctx.moveTo(sx, sy + bobY);
+    ctx.quadraticCurveTo(sx + 14, sy - 8 + wingFlap * 12 + bobY, sx + 22, sy + bobY);
+    ctx.quadraticCurveTo(sx + 16, sy + 8 - wingFlap * 5 + bobY, sx, sy + 4 + bobY);
+    ctx.closePath();
+    ctx.fill();
+
+    // Body
+    ctx.fillStyle = flash ? '#ffffff' : '#330033';
+    ctx.beginPath();
+    ctx.ellipse(sx, sy + bobY, 7, 9, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Ears
+    ctx.fillStyle = flash ? '#ffffff' : '#220022';
+    ctx.beginPath();
+    ctx.moveTo(sx - 4, sy - 6 + bobY);
+    ctx.lineTo(sx - 6, sy - 13 + bobY);
+    ctx.lineTo(sx - 1, sy - 6 + bobY);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(sx + 4, sy - 6 + bobY);
+    ctx.lineTo(sx + 6, sy - 13 + bobY);
+    ctx.lineTo(sx + 1, sy - 6 + bobY);
+    ctx.fill();
+
+    // Tiny red eyes
+    ctx.save();
+    ctx.shadowBlur = 4;
+    ctx.shadowColor = '#ff0000';
+    ctx.fillStyle = flash ? '#ffffff' : '#ff0000';
+    ctx.beginPath();
+    ctx.arc(sx - 3, sy - 1 + bobY, 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(sx + 3, sy - 1 + bobY, 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    ctx.restore();
+  }
+
 // Enemy factory
 const EnemyFactory = {
   createVampire(x, y, difficultyMult = 1) {
