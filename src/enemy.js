@@ -195,9 +195,7 @@ class Enemy extends Entity {
   }
 
   // ... draw methods unchanged ...
-}
-
-drawVampire(ctx, sx, sy) {
+  drawVampire(ctx, sx, sy) {
     const flash = this.flashTimer > 0;
 
     // Cape (dark swoosh behind)
@@ -487,6 +485,8 @@ drawVampire(ctx, sx, sy) {
     ctx.restore();
   }
 }
+
+
 // Enemy factory
 const EnemyFactory = {
   createVampire(x, y, difficultyMult = 1) {
