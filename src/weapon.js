@@ -83,6 +83,33 @@ const WeaponSystem = {
         weapon.abilityCooldownRemaining = Math.max(0, weapon.abilityCooldownRemaining - dt);
       }
 
+      // Ice Staff activation (one-shot on KeyE)
+      if (weapon.type === 'iceStaff' && typeof Input.consumeKey === 'function' && Input.consumeKey('KeyE')) {
+        if ((weapon.abilityCooldownRemaining || 0) <= 0) {
+          const player = game.player;
+          const field = new IceField(player, {
+            radius: weapon.abilityRadius,
+            damagePerTick: weapon.abilityDamagePerTick,
+            tickInterval: weapon.abilityTickInterval,
+            duration: weapon.abilityDuration,
+            slowFactor: weapon.slowFactor,
+            slowDuration: weapon.slowDuration,
+            color: weapon.color,
+            glow: weapon.glowColor
+          });
+          // projectiles is already used for Explosion/IceField in this project
+          game.projectiles.push(field);
+          weapon.abilityCooldownRemaining = weapon.abilityCooldown || 0;
+          if (game.particles) {
+            game.particles.spawnBurst(player.x, player.y, weapon.color, 12);
+            game.particles.spawnText(player.x, player.y - 26, 'ICE FIELD!', '#aee6ff');
+          }
+        } else {
+          // optional cooldown feedback (commented out)
+          // if (game.particles) game.particles.spawnText(game.player.x, game.player.y - 26, 'Ability on cooldown', '#ffaaaa');
+        }
+      }
+
       if (weapon.cooldown <= 0) {
         // Don't fire if player is silenced
         if (!game.player.isSilenced) {
