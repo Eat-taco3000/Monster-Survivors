@@ -1,36 +1,47 @@
-// Input handler - tracks keyboard state for 8-directional movement
+// Input handler - tracks keyboard state for 8-directional movement and one-shot keys
 const Input = {
-  keys: {},
-  keysPressed: {},
+  keys: {},       // current held state (true while down)
+  pressed: {},    // edge/one-shot presses (set true once on keydown, cleared when consumed)
 
   init() {
     window.addEventListener('keydown', (e) => {
-      // Record key down state
+      // If key was not already held, mark as newly pressed (edge)
+      if (!this.keys[e.code]) {
+        this.pressed[e.code] = true;
+      }
       this.keys[e.code] = true;
-      this.keysPressed[e.code] = true; // used for edge-triggered inputs
 
-      // Prevent default for game keys
-      if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','KeyW','KeyA','KeyS','KeyD'].includes(e.code)) {
+      // Prevent default for game keys (include KeyE)
+      if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','KeyW','KeyA','KeyS','KeyD','KeyE'].includes(e.code)) {
         e.preventDefault();
       }
     });
 
     window.addEventListener('keyup', (e) => {
       this.keys[e.code] = false;
+      // Clear pressed on keyup to avoid stale state if never consumed
+      this.pressed[e.code] = false;
     });
 
     // Reset on blur
     window.addEventListener('blur', () => {
       this.keys = {};
-      this.keysPressed = {};
+      this.pressed = {};
     });
   },
 
-  // Consume a keypress (edge-triggered). Returns true once per keydown.
+  // Consume a one-shot key press. Returns true exactly once per physical press.
   consumeKey(code) {
-    const pressed = !!this.keysPressed[code];
-    if (pressed) this.keysPressed[code] = false;
-    return pressed;
+    if (this.pressed[code]) {
+      this.pressed[code] = false;
+      return true;
+    }
+    return false;
+  },
+
+  // Direct check if a key is held down
+  isKeyDown(code) {
+    return !!this.keys[code];
   },
 
   // Get movement vector (8-directional)
