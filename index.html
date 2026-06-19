@@ -19,7 +19,7 @@
       border: 2px solid #1a1a2e;
       image-rendering: pixelated;
     }
-    #start-screen, #game-over-screen {
+    #start-screen, #game-over-screen, #pause-screen {
       position: absolute;
       display: flex;
       flex-direction: column;
@@ -34,11 +34,20 @@
       background: rgba(10, 10, 10, 0.85);
       backdrop-filter: grayscale(1) brightness(0.4);
     }
-    #start-screen h1, #game-over-screen h1 {
+    #pause-screen {
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(6, 8, 16, 0.72);
+      backdrop-filter: blur(2px);
+    }
+    #start-screen h1, #game-over-screen h1, #pause-screen h1 {
       font-size: 48px;
       margin-bottom: 10px;
       text-shadow: 0 0 20px rgba(180, 0, 0, 0.8);
       color: #cc0000;
+    }
+    #pause-screen h1 {
+      color: #ffd86b;
+      text-shadow: 0 0 20px rgba(255, 216, 107, 0.6);
     }
     #start-screen h2 {
       font-size: 24px;
@@ -176,6 +185,15 @@
       <p>Time Survived: <span id="finalTime">0:00</span></p>
     </div>
     <button class="btn" id="restartBtn">Play Again</button>
+  </div>
+
+  <div id="pause-screen" class="hidden">
+    <h1>PAUSED</h1>
+    <h2>Take a breather</h2>
+    <button class="btn" id="resumeBtn">Resume</button>
+    <div class="controls-hint">
+      <p>Press P or Escape to resume</p>
+    </div>
   </div>
 
   <!-- Weapon selection modal (shown on level up) -->
